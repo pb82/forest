@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">forest</string>
+    <string name="scan_status_idle">Initializing</string>
+    <string name="scan_status_scanning">Scanning</string>
+    <string name="scan_status_done">Done</string>
+    <string name="ble_not_supported">Bluetooth LE not supported</string>
+    <string name="gps_not_supported">GPS location not supported</string>
+</resources>
