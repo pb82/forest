@@ -19,12 +19,14 @@ import java.util.Date;
 public class WorkoutActivity extends Activity {
     private HeartRateService heartRateService;
     private ServiceConnection connection;
+    private DataCruncher cruncher = new DataCruncher();
     private TextView min;
     private TextView max;
     private TextView cnt;
     private TextView avg;
     private TextView cur;
     private TextView dur;
+    private TextView wst;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,16 +36,18 @@ public class WorkoutActivity extends Activity {
         // No screen rotation, don't want to deal with it
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 
-        min = findViewById(R.id.text_heart_rate_min);
-        max = findViewById(R.id.text_heart_rate_max);
-        cnt = findViewById(R.id.text_heart_rate_cnt);
-        avg = findViewById(R.id.text_heart_rate_avg);
-        cur = findViewById(R.id.text_heart_rate_cur);
-        dur = findViewById(R.id.text_heart_rate_dur);
+        min = findViewById(R.id.txtWorkoutMinBpm);
+        max = findViewById(R.id.txtWorkoutMaxBpm);
+        cnt = findViewById(R.id.txtWorkoutSamples);
+        avg = findViewById(R.id.txtWorkoutAvgBpm);
+        cur = findViewById(R.id.txtWorkoutCurBpm);
+        dur = findViewById(R.id.txtWorkoutDuration);
+        wst = findViewById(R.id.txtWorkoutStatus);
+
+        wst.setText(R.string.ble_status_disconnected);
 
         if (setupService() == false) {
-            Log.e(Constants.TAG, "error setting up service connection");
-            finish();
+            Log.d(Constants.TAG, "no bluetooth device connected");
         }
     }
 
@@ -94,23 +98,30 @@ public class WorkoutActivity extends Activity {
             switch (action) {
                 case Constants.ACTION_CONNECTED:
                     Log.d(Constants.TAG, "connected to device");
+                    wst.setText(R.string.ble_status_connected);
                     break;
                 case Constants.ACTION_SERVICE_DISCOVERED:
                     Log.d(Constants.TAG, "service found");
+                    wst.setText(R.string.ble_status_services);
                     break;
                 case Constants.ACTION_CHARACTERISTIC_DISCOVERED:
                     Log.d(Constants.TAG, "characteristic found");
+                    wst.setText(R.string.ble_status_characteristics);
+                    break;
+                case Constants.ACTION_DISCONNECTED:
+                    Log.d(Constants.TAG, "ble disconnected");
+                    wst.setText(R.string.ble_status_disconnected);
                     break;
                 case Constants.ACTION_DATA:
                     int data = intent.getIntExtra(Constants.EXTRA_DATA, 0);
                     Log.d(Constants.TAG, String.format("data received: %d", data));
-                    add(data);
-                    min.setText(String.format("%d min bpm", data_min));
-                    max.setText(String.format("%d max bpm", data_max));
-                    cnt.setText(String.format("%d samples", data_count));
-                    avg.setText(String.format("%d avg bpm", (int) data_average));
-                    cur.setText(String.format("%d cur bpm", data_latest));
-                    dur.setText(String.format("%d h %d m %d s duration", hours, minutes, seconds));
+                    cruncher.recordHeartRate(data);
+                    min.setText(cruncher.getMinBpm());
+                    max.setText(cruncher.getMaxBpm());
+                    cnt.setText(cruncher.getSamples());
+                    avg.setText(cruncher.getAvgBpm());
+                    cur.setText(cruncher.getCurBpm());
+                    dur.setText(cruncher.getDuration());
                     break;
                 default:
                     Log.d(Constants.TAG, String.format("unknown action: %s", action));
@@ -124,36 +135,5 @@ public class WorkoutActivity extends Activity {
         intentFilter.addAction(Constants.ACTION_DATA);
         intentFilter.addAction(Constants.ACTION_CONNECTED);
         return intentFilter;
-    }
-
-    public float data_average = 0;
-    public int data_latest = 0;
-    public int data_count = 0;
-    public int data_min = 999;
-    public int data_max = 0;
-    public long timestamp = System.currentTimeMillis();
-    public long seconds;
-    public long hours;
-    public long minutes;
-
-    public void add(int measurement) {
-        data_latest = measurement;
-
-        if (measurement < data_min) {
-            data_min = measurement;
-        }
-
-        if (measurement > data_max) {
-            data_max = measurement;
-        }
-
-        data_count++;
-        data_average = (((data_count - 1) * data_average) + measurement) / data_count;
-
-        long now = System.currentTimeMillis();
-        long diff = now - timestamp;
-        seconds = diff / 1000;
-        minutes = seconds / 60;
-        hours = minutes / 60;
     }
 }

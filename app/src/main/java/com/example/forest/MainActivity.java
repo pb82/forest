@@ -12,6 +12,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +32,7 @@ public class MainActivity extends Activity {
     private RecyclerView.LayoutManager deviceListLayout;
     private DeviceListAdapter deviceListAdapter;
     private Handler handler = new Handler();
+    private Button skipBluetooth;
 
     private BluetoothAdapter.LeScanCallback scanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
@@ -53,11 +56,13 @@ public class MainActivity extends Activity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 
         scanStatusText = findViewById(R.id.scan_status_text);
+        skipBluetooth = findViewById(R.id.btnSkipBluetooth);
 
         // We need bluetooth low energy support
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
-            finish();
+        } else {
+            setupBluetooth();
         }
 
         // We need gps location support
@@ -67,7 +72,17 @@ public class MainActivity extends Activity {
         }
 
         setupList();
-        setupBluetooth();
+
+        // Alllow users to skip scanning for bluetooth devices and only record
+        // location
+        skipBluetooth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(Constants.TAG, "skip bluetooth scan");
+                Intent intent = new Intent(MainActivity.this, WorkoutActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     // Setup the list of bluetooth devices
@@ -115,6 +130,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (bluetoothAdapter == null) {
+            scanStatusText.setText(R.string.scan_status_disabled);
+            return;
+        }
+
         if (bluetoothAdapter.isEnabled() == false) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);

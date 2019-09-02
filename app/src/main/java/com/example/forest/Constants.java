@@ -10,6 +10,7 @@ public final class Constants {
     public static final String EXTRA_DATA = "forest.data";
     public static final String ACTION_DATA = "forest.measurement";
     public static final String ACTION_CONNECTED = "forest.connected";
+    public static final String ACTION_DISCONNECTED = "forest.disconnected";
     public static final String ACTION_SERVICE_DISCOVERED = "forest.serivce.discovered";
     public static final String ACTION_CHARACTERISTIC_DISCOVERED = "forest.characteristic.discovered";
     public static final UUID UUID_SERVICE_HEART_RATE = UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb");

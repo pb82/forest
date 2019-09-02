@@ -21,7 +21,17 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/device_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/btnSkipBluetooth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/skip_bluetooth"
+            android:visibility="visible"
+            tools:text="@string/skip_bluetooth"
+            tools:visibility="visible" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

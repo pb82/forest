@@ -2,7 +2,13 @@
     <string name="app_name">forest</string>
     <string name="scan_status_idle">Initializing</string>
     <string name="scan_status_scanning">Scanning</string>
+    <string name="scan_status_disabled">Bluetooth disabled</string>
     <string name="scan_status_done">Done</string>
     <string name="ble_not_supported">Bluetooth LE not supported</string>
     <string name="gps_not_supported">GPS location not supported</string>
+    <string name="skip_bluetooth">Skip Bluetooth Scan</string>
+    <string name="ble_status_disconnected">Disconnected</string>
+    <string name="ble_status_connected">Connected</string>
+    <string name="ble_status_services">Services found</string>
+    <string name="ble_status_characteristics">Characteristic found</string>
 </resources>

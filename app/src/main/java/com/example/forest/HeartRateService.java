@@ -27,6 +27,8 @@ public class HeartRateService extends Service {
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
                     broadcast(Constants.ACTION_CONNECTED);
                     gatt.discoverServices();
+                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    broadcast(Constants.ACTION_DISCONNECTED);
                 }
             }
 
@@ -90,6 +92,7 @@ public class HeartRateService extends Service {
     private void close() {
         if (gatt != null) {
             gatt.disconnect();
+            gatt.close();
             gatt = null;
             Log.d(Constants.TAG, "disconnected from device");
         }
