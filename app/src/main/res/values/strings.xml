@@ -11,4 +11,11 @@
     <string name="ble_status_connected">Connected</string>
     <string name="ble_status_services">Services found</string>
     <string name="ble_status_characteristics">Characteristic found</string>
+    <string name="gps_status_enabled">Enabled</string>
+    <string name="gps_status_disabled">Disabled</string>
+    <string name="gps_status_pending">Pending</string>
+    <string name="gps_status_perms">Forbidden</string>
+    <string name="gps_status_online">Online</string>
+    <string name="recorder_start">Start recording</string>
+    <string name="recorder_stop">Stop recording</string>
 </resources>

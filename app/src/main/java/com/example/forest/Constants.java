@@ -13,6 +13,8 @@ public final class Constants {
     public static final String ACTION_DISCONNECTED = "forest.disconnected";
     public static final String ACTION_SERVICE_DISCOVERED = "forest.serivce.discovered";
     public static final String ACTION_CHARACTERISTIC_DISCOVERED = "forest.characteristic.discovered";
+    public static final String ACTION_LOCATION_STATUS_CHANGED = "forest.location.status.change";
+    public static final String ACTION_LOCATION_DATA = "forest.location.data";
     public static final UUID UUID_SERVICE_HEART_RATE = UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb");
     public static final UUID UUID_CHARACT_HEART_RATE = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
     public static final UUID UUID_CHACACT_ENA_NOTIFY = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
