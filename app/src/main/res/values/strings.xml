@@ -10,7 +10,7 @@
     <string name="ble_status_disconnected">Disconnected</string>
     <string name="ble_status_connected">Connected</string>
     <string name="ble_status_services">Services found</string>
-    <string name="ble_status_characteristics">Characteristic found</string>
+    <string name="ble_status_characteristics">Receive Data</string>
     <string name="gps_status_enabled">Enabled</string>
     <string name="gps_status_disabled">Disabled</string>
     <string name="gps_status_pending">Pending</string>

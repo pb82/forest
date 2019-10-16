@@ -32,9 +32,11 @@ import org.json.JSONException;
 
 import java.util.Date;
 
-public class WorkoutActivity extends Activity implements LocationListener {
+public class WorkoutActivity extends Activity {
     private HeartRateService heartRateService;
+    private LocationService locationService;
     private ServiceConnection connection;
+    private ServiceConnection locationConnection;
     private DataCruncher cruncher = new DataCruncher();
     private LocationManager locationManager;
     private PowerManager.WakeLock wakeLock;
@@ -56,6 +58,7 @@ public class WorkoutActivity extends Activity implements LocationListener {
     private TextView cpc;
     private TextView apc;
     private TextView lsp;
+    private TextView alt;
 
     // Buttons
     private Button rec;
@@ -88,6 +91,7 @@ public class WorkoutActivity extends Activity implements LocationListener {
         cpc = findViewById(R.id.txtCurrentPace);
         apc = findViewById(R.id.txtAvgPace);
         lsp = findViewById(R.id.txtLocationSamples);
+        alt = findViewById(R.id.txtAltitude);
         rec = findViewById(R.id.btnRecorder);
 
         wst.setText(R.string.ble_status_disconnected);
@@ -123,13 +127,26 @@ public class WorkoutActivity extends Activity implements LocationListener {
     }
 
     private void setupLocation() {
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, this);
-            gst.setText(R.string.gps_status_pending);
-        } else {
-            gst.setText(R.string.gps_status_perms);
-        }
+        locationConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder service) {
+                locationService = ((LocationService.LocalBinder) service).getService();
+                locationService.init();
+                gst.setText("Pending");
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+                locationService = null;
+                Log.d(Constants.TAG, "service disconnected");
+                gst.setText("Disconnected");
+            }
+        };
+
+        Intent intent = new Intent(this, LocationService.class);
+        bindService(intent, locationConnection, BIND_AUTO_CREATE);
+        Log.d(Constants.TAG, "location service bound");
+
     }
 
     @Override
@@ -143,6 +160,9 @@ public class WorkoutActivity extends Activity implements LocationListener {
         super.onDestroy();
         if (connection != null) {
             unbindService(connection);
+        }
+        if (locationConnection != null) {
+            unbindService(locationConnection);
         }
         unregisterReceiver(receiver);
         wakeLock.release();
@@ -190,7 +210,7 @@ public class WorkoutActivity extends Activity implements LocationListener {
                     wst.setText(R.string.ble_status_services);
                     break;
                 case Constants.ACTION_CHARACTERISTIC_DISCOVERED:
-                    Log.d(Constants.TAG, "characteristic found");
+                    Log.d(Constants.TAG, "Characteristic discovered");
                     wst.setText(R.string.ble_status_characteristics);
                     break;
                 case Constants.ACTION_DISCONNECTED:
@@ -213,6 +233,27 @@ public class WorkoutActivity extends Activity implements LocationListener {
                         e.printStackTrace();
                     }
                     break;
+                case Constants.ACTION_LOCATION_STATUS_CHANGED:
+                    String status = intent.getStringExtra(Constants.EXTRA_DATA);
+                    gst.setText(status);
+                    break;
+                case Constants.ACTION_LOCATION_DATA:
+                    Location location = intent.getParcelableExtra(Constants.EXTRA_DATA);
+                    cruncher.recordLLocation(location);
+                    spd.setText(cruncher.getSpeed());
+                    asp.setText(cruncher.getAvgSpeed());
+                    dst.setText(cruncher.getDistance());
+                    apc.setText(cruncher.getAvgPace());
+                    cpc.setText(cruncher.getPace());
+                    alt.setText(cruncher.getAltitude());
+                    lsp.setText(cruncher.getLocationSamples());
+                    try {
+                        recorder.recordLocation(location);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    gst.setText("Online");
+                    break;
                 default:
                     Log.d(Constants.TAG, String.format("unknown action: %s", action));
                     break;
@@ -227,38 +268,8 @@ public class WorkoutActivity extends Activity implements LocationListener {
         intentFilter.addAction(Constants.ACTION_DISCONNECTED);
         intentFilter.addAction(Constants.ACTION_SERVICE_DISCOVERED);
         intentFilter.addAction(Constants.ACTION_CHARACTERISTIC_DISCOVERED);
+        intentFilter.addAction(Constants.ACTION_LOCATION_STATUS_CHANGED);
+        intentFilter.addAction(Constants.ACTION_LOCATION_DATA);
         return intentFilter;
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        gst.setText(R.string.gps_status_online);
-        cruncher.recordLLocation(location);
-        spd.setText(cruncher.getSpeed());
-        asp.setText(cruncher.getAvgSpeed());
-        dst.setText(cruncher.getDistance());
-        apc.setText(cruncher.getAvgPace());
-        cpc.setText(cruncher.getPace());
-        lsp.setText(cruncher.getLocationSamples());
-        try {
-            recorder.recordLocation(location.getLatitude(), location.getLongitude(), location.getSpeed());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-        gst.setText(s);
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-        gst.setText(R.string.gps_status_enabled);
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
-        gst.setText(R.string.gps_status_disabled);
     }
 }

@@ -1,5 +1,7 @@
 package com.example.forest;
 
+import android.location.Location;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,7 +33,7 @@ public class DataRecorder {
         heartrate = new JSONArray();
         location = new JSONArray();
 
-        workout.put("timestamp", new Date().getTime() / 1000L);
+        workout.put("timestamp", new Date().getTime());
         workout.put("location", location);
         workout.put("heartrate", heartrate);
     }
@@ -60,7 +62,7 @@ public class DataRecorder {
         }
 
         JSONObject obj = new JSONObject();
-        obj.put("timestamp", new Date().getTime() / 1000L);
+        obj.put("timestamp", new Date().getTime());
         obj.put("bpm", bpm);
         heartrate.put(obj);
     }
@@ -69,16 +71,17 @@ public class DataRecorder {
         return this.started;
     }
 
-    public void recordLocation(double lat, double lon, double speed) throws JSONException {
+    public void recordLocation(Location loc) throws JSONException {
         if (!this.started) {
             return;
         }
 
         JSONObject obj = new JSONObject();
-        obj.put("timestamp", new Date().getTime() / 1000L);
-        obj.put("lat", lat);
-        obj.put("lon", lon);
-        obj.put("speed", speed);
+        obj.put("timestamp", new Date().getTime());
+        obj.put("lat", loc.getLatitude());
+        obj.put("lon", loc.getLongitude());
+        obj.put("speed", loc.getSpeed() * 3.6);
+        obj.put("altitude", loc.getAltitude());
         location.put(obj);
     }
 }

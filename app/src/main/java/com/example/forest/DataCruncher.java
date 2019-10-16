@@ -21,6 +21,7 @@ public class DataCruncher {
     private int location_samples = 0;
     private double current_pace = 0;
     private double avg_pace = 0;
+    private double current_altitude = 0;
 
     public DataCruncher() {
 
@@ -41,6 +42,12 @@ public class DataCruncher {
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return EARTH_RADIUS_KM * c;
+    }
+
+    private String paceToTime(double pace) {
+        double minutes = Math.floor(pace);
+        double seconds = (pace * 60) % 60;
+        return String.format("%.0fm %.0fs", minutes, seconds);
     }
 
     public String getMaxBpm() {
@@ -86,12 +93,16 @@ public class DataCruncher {
         return String.format("%.2f km", distance_total);
     }
 
+    public String getAltitude() {
+        return String.format("%.0f m", current_altitude);
+    }
+
     public String getPace() {
-        return String.format("%.2f m/km", current_pace);
+        return paceToTime(current_pace);
     }
 
     public String getAvgPace() {
-        return String.format("%.2f m/km", avg_pace);
+        return paceToTime(avg_pace);
     }
 
     public void recordLLocation(Location location) {
@@ -104,6 +115,7 @@ public class DataCruncher {
         }
 
         location_samples++;
+        current_altitude = location.getAltitude();
         current_speed = location.getSpeed() * 3.6;
         avg_speed = (((location_samples - 1) * avg_speed) + current_speed) / location_samples;
 
